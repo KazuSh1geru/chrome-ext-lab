@@ -29,8 +29,8 @@ window.initializeTranscription = function() {
   console.log('Transcript container created');
 
   // 音声取得とWeb Speech APIの初期化処理
-  const transcription = new Transcription();
-  transcription.initialize();
+  window.transcription = new Transcription();
+  window.transcription.initialize();
 };
 
 // 即時実行を試みる
@@ -59,29 +59,28 @@ document.addEventListener('DOMContentLoaded', () => {
   window.initializeTranscription();
 });
 
-// ES ModulesとCommonJSの両方をサポート
-if (typeof exports !== 'undefined') {
-  module.exports = { MeetTranscription };
-} else {
-  window.MeetTranscription = MeetTranscription;
-}
-
 // メッセージリスナーの設定
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('Received message:', request);
   try {
     switch (request.action) {
       case 'startTranscription':
-        window.initializeTranscription();
-        sendResponse({ status: 'started' });
+        if (window.transcription) {
+          window.transcription.start();
+          sendResponse({ status: 'started' });
+        } else {
+          window.initializeTranscription();
+          window.transcription.start();
+          sendResponse({ status: 'started' });
+        }
         break;
       case 'stopTranscription':
-        // transcriptionのインスタンスを取得して停止
-        const transcription = window.transcription;
-        if (transcription) {
-          transcription.stop();
+        if (window.transcription) {
+          window.transcription.stop();
+          sendResponse({ status: 'stopped' });
+        } else {
+          sendResponse({ error: 'Transcription not initialized' });
         }
-        sendResponse({ status: 'stopped' });
         break;
       default:
         sendResponse({ error: 'Unknown action' });

@@ -1,49 +1,68 @@
-// 文字起こし機能のダミー実装
+// 文字起こし機能の実装
 class Transcription {
   constructor() {
     this.isActive = false;
     this.recognition = null;
   }
 
-  // 文字起こしの初期化
   initialize() {
-    console.log('Transcription service initialized');
-    // Web Speech APIのダミー初期化
+    console.log('Initializing Web Speech API');
     if ('webkitSpeechRecognition' in window) {
       this.recognition = new webkitSpeechRecognition();
       this.recognition.continuous = true;
       this.recognition.interimResults = true;
       this.recognition.lang = 'ja-JP';
+      this.setupRecognitionHandlers();
     }
-    return true;
   }
 
-  // 文字起こし開始
-  start() {
-    console.log('Starting transcription service');
-    this.isActive = true;
-    if (this.recognition) {
-      this.recognition.start();
-    }
-    return true;
-  }
-
-  // 文字起こし停止
-  stop() {
-    console.log('Stopping transcription service');
-    this.isActive = false;
-    if (this.recognition) {
-      this.recognition.stop();
-    }
-    return true;
-  }
-
-  // ステータス確認
-  getStatus() {
-    return {
-      active: this.isActive,
-      available: !!this.recognition
+  setupRecognitionHandlers() {
+    this.recognition.onresult = (event) => {
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        this.updateTranscriptUI(transcript, !event.results[i].isFinal);
+      }
     };
+
+    this.recognition.onerror = (event) => {
+      console.error('Recognition error:', event.error);
+    };
+  }
+
+  updateTranscriptUI(text, isInterim) {
+    const container = document.querySelector('.like-a-tactiq-transcript');
+    if (!container) return;
+
+    const p = document.createElement('p');
+    p.textContent = text;
+    p.style.opacity = isInterim ? '0.7' : '1';
+    
+    if (isInterim) {
+      const lastElement = container.lastChild;
+      if (lastElement?.classList.contains('interim')) {
+        container.removeChild(lastElement);
+      }
+      p.classList.add('interim');
+    }
+    
+    container.appendChild(p);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  start() {
+    if (!this.isActive && this.recognition) {
+      this.isActive = true;
+      this.recognition.start();
+      console.log('Transcription started');
+    }
+  }
+
+  stop() {
+    if (this.isActive && this.recognition) {
+      this.isActive = false;
+      this.recognition.stop();
+      console.log('Transcription stopped');
+    }
   }
 }
 
