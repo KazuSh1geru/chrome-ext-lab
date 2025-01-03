@@ -6,7 +6,8 @@
   "permissions": [
     "tabs",
     "storage",
-    "scripting"
+    "scripting",
+    "activeTab"
   ],
   "host_permissions": [
     "https://meet.google.com/*"
@@ -21,7 +22,8 @@
         "scripts/content.js",
         "scripts/transcription.js"
       ],
-      "run_at": "document_start"
+      "run_at": "document_start",
+      "all_frames": true
     }
   ],
   "action": {

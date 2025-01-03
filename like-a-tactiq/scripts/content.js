@@ -1,7 +1,7 @@
 console.log('Content script loaded for Like-a-Tactiq');
 
-// Google Meetページの音声を取得するための初期化処理
-function initializeTranscription() {
+// グローバルスコープで関数を定義
+window.initializeTranscription = function() {
   console.log('Initializing transcription...');
   
   // すでに存在する場合は作成しない
@@ -31,34 +31,32 @@ function initializeTranscription() {
   // 音声取得とWeb Speech APIの初期化処理
   const transcription = new Transcription();
   transcription.initialize();
-}
+};
 
 // 即時実行を試みる
 console.log('Attempting immediate initialization');
 if (document.body) {
-  initializeTranscription();
-} else {
-  // bodyが利用可能になるまで待機
-  const observer = new MutationObserver((mutations, obs) => {
-    if (document.body) {
-      console.log('Body found, initializing...');
-      initializeTranscription();
-      obs.disconnect();
-    }
-  });
-
-  observer.observe(document.documentElement, {
-    childList: true,
-    subtree: true
-  });
+  window.initializeTranscription();
 }
+
+// MutationObserverを使用してbodyの出現を監視
+const observer = new MutationObserver((mutations, obs) => {
+  if (document.body) {
+    console.log('Body found, initializing...');
+    window.initializeTranscription();
+    obs.disconnect();
+  }
+});
+
+observer.observe(document.documentElement, {
+  childList: true,
+  subtree: true
+});
 
 // バックアップとしてDOMContentLoaded時にも実行
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOMContentLoaded event fired');
-  if (!document.querySelector('.like-a-tactiq-transcript')) {
-    initializeTranscription();
-  }
+  window.initializeTranscription();
 });
 
 // ES ModulesとCommonJSの両方をサポート
