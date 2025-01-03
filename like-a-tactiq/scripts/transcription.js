@@ -67,8 +67,4 @@ class Transcription {
 }
 
 // グローバルに公開
-window.Transcription = Transcription;
-
-// デフォルトのインスタンスをエクスポート
-const transcription = new Transcription();
-export default transcription; 
+window.Transcription = Transcription; 

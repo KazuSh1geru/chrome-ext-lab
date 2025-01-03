@@ -29,7 +29,7 @@ window.initializeTranscription = function() {
   console.log('Transcript container created');
 
   // 音声取得とWeb Speech APIの初期化処理
-  window.transcription = new Transcription();
+  window.transcription = new window.Transcription();
   window.transcription.initialize();
 };
 

@@ -19,8 +19,8 @@
     {
       "matches": ["https://meet.google.com/*"],
       "js": [
-        "scripts/content.js",
-        "scripts/transcription.js"
+        "scripts/transcription.js",
+        "scripts/content.js"
       ],
       "run_at": "document_start",
       "all_frames": true
