@@ -111,4 +111,11 @@ if (process.env.NODE_ENV !== 'test') {
   document.addEventListener('DOMContentLoaded', () => {
     initializeTranscription();
   });
+}
+
+// ES ModulesとCommonJSの両方をサポート
+if (typeof exports !== 'undefined') {
+  module.exports = { MeetTranscription };
+} else {
+  window.MeetTranscription = MeetTranscription;
 } 
