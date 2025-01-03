@@ -7,86 +7,119 @@ describe('Like-a-Tactiq Extension E2E', () => {
   let extensionId;
 
   beforeAll(async () => {
-    const extensionPath = path.join(__dirname, '../../');
+    const extensionPath = path.resolve(__dirname, '../../');
     browser = await puppeteer.launch({
       headless: false,
       args: [
         `--disable-extensions-except=${extensionPath}`,
         `--load-extension=${extensionPath}`,
         '--allow-file-access-from-files',
-        '--use-fake-ui-for-media-stream', // マイクアクセスの自動許可
-        '--use-fake-device-for-media-stream' // 仮想メディアデバイスの使用
+        '--use-fake-ui-for-media-stream',
+        '--use-fake-device-for-media-stream',
+        '--no-sandbox'
       ]
     });
 
-    // 拡張機能のIDを取得
-    extensionId = await getExtensionId(browser);
+    // 拡張機能の読み込みを待つ
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    try {
+      extensionId = await getExtensionId(browser);
+      console.log('Extension ID:', extensionId);
+    } catch (error) {
+      console.error('Failed to get extension ID:', error);
+      throw error;
+    }
   });
 
   beforeEach(async () => {
-    page = await browser.newPage();
-    // Google Meetのモックページを使用
-    await page.goto('https://meet.google.com/test-meeting-id');
-    // ページ読み込み完了まで待機
-    await page.waitForTimeout(2000);
+    try {
+      page = await browser.newPage();
+      await page.goto('https://meet.google.com/test-meeting-id', {
+        waitUntil: 'networkidle0',
+        timeout: 30000
+      });
+    } catch (error) {
+      console.error('Failed to setup test page:', error);
+      throw error;
+    }
   });
 
   afterEach(async () => {
-    await page.close();
+    if (page) {
+      await page.close().catch(console.error);
+    }
   });
 
   afterAll(async () => {
-    await browser.close();
+    if (browser) {
+      await browser.close().catch(console.error);
+    }
   });
 
   test('extension injects transcript container', async () => {
-    const container = await page.$('.like-a-tactiq-transcript');
-    expect(container).toBeTruthy();
+    try {
+      await page.waitForSelector('.like-a-tactiq-transcript', { timeout: 5000 });
+      const container = await page.$('.like-a-tactiq-transcript');
+      expect(container).toBeTruthy();
+    } catch (error) {
+      console.error('Failed to find transcript container:', error);
+      throw error;
+    }
   });
 
   test('popup controls work correctly', async () => {
-    // ポップアップページを開く
-    const popupPage = await browser.newPage();
-    await popupPage.goto(`chrome-extension://${extensionId}/popup/popup.html`);
+    try {
+      const popupPage = await browser.newPage();
+      await popupPage.goto(`chrome-extension://${extensionId}/popup/popup.html`);
+      
+      await popupPage.waitForSelector('#startTranscription');
+      await popupPage.click('#startTranscription');
+      await popupPage.waitForTimeout(1000);
 
-    // 開始ボタンをクリック
-    await popupPage.click('#startTranscription');
-    await popupPage.waitForTimeout(1000);
+      const status = await popupPage.$eval('#status', el => el.textContent);
+      expect(status).toBe('Transcribing...');
 
-    // ステータスをチェック
-    const status = await popupPage.$eval('#status', el => el.textContent);
-    expect(status).toBe('Transcribing...');
+      await popupPage.click('#stopTranscription');
+      await popupPage.waitForTimeout(1000);
 
-    // 停止ボタンをクリック
-    await popupPage.click('#stopTranscription');
-    await popupPage.waitForTimeout(1000);
+      const newStatus = await popupPage.$eval('#status', el => el.textContent);
+      expect(newStatus).toBe('Stopped');
 
-    // ステータスが更新されたことを確認
-    const newStatus = await popupPage.$eval('#status', el => el.textContent);
-    expect(newStatus).toBe('Stopped');
-
-    await popupPage.close();
+      await popupPage.close();
+    } catch (error) {
+      console.error('Failed in popup test:', error);
+      throw error;
+    }
   });
 
   test('transcription UI updates with speech', async () => {
-    // 文字起こしコンテナが表示されていることを確認
-    await page.waitForSelector('.like-a-tactiq-transcript');
+    try {
+      await page.waitForSelector('.like-a-tactiq-transcript');
 
-    // ポップアップを開いて文字起こしを開始
-    const popupPage = await browser.newPage();
-    await popupPage.goto(`chrome-extension://${extensionId}/popup/popup.html`);
-    await popupPage.click('#startTranscription');
+      const popupPage = await browser.newPage();
+      await popupPage.goto(`chrome-extension://${extensionId}/popup/popup.html`);
+      await popupPage.click('#startTranscription');
 
-    // 音声認識のシミュレーション（実際のテストでは、より複雑な音声シミュレーションが必要）
-    await page.evaluate(() => {
-      const event = new Event('speechrecognition');
-      document.dispatchEvent(event);
-    });
+      await page.evaluate(() => {
+        const event = new CustomEvent('speechrecognition', {
+          detail: { text: 'Test transcription' }
+        });
+        document.dispatchEvent(event);
+      });
 
-    // 文字起こしテキストが表示されることを確認
-    const transcriptText = await page.$eval('.like-a-tactiq-transcript p', el => el.textContent);
-    expect(transcriptText).toBeTruthy();
+      await page.waitForFunction(
+        () => document.querySelector('.like-a-tactiq-transcript p')?.textContent === 'Test transcription',
+        { timeout: 5000 }
+      );
 
-    await popupPage.close();
+      const transcriptText = await page.$eval('.like-a-tactiq-transcript p', el => el.textContent);
+      expect(transcriptText).toBe('Test transcription');
+
+      await popupPage.close();
+    } catch (error) {
+      console.error('Failed in transcription test:', error);
+      throw error;
+    }
   });
 }); 
