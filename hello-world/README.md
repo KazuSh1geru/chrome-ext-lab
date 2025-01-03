@@ -13,3 +13,5 @@ https://github.com/GoogleChrome/chrome-extensions-samples/tree/main/functional-s
 または、Chrome メニューをクリックし、[その他のツール] にカーソルを合わせて [拡張機能] を選択します。
 [デベロッパー モード] の横にある切り替えスイッチをクリックして、デベロッパー モードを有効にします。
 [展開済みを読み込む] ボタンをクリックして、拡張機能のディレクトリを選択します。
+
+![再読み込みするタイミング](images/load_timings.png)
