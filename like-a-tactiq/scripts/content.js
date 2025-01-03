@@ -90,4 +90,4 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({ error: error.message });
   }
   return true; // 非同期レスポンスのために必要
-}); 
+});
