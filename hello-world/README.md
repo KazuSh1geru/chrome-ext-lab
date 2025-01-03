@@ -2,9 +2,9 @@
 
 下記記事のチュートリアルを参考に作成したものです。
 
-https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world?hl=ja
+<https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world?hl=ja>
 
-https://github.com/GoogleChrome/chrome-extensions-samples/tree/main/functional-samples/tutorial.hello-world
+<https://github.com/GoogleChrome/chrome-extensions-samples/tree/main/functional-samples/tutorial.hello-world>
 
 デベロッパー モードで解凍された拡張機能を読み込むには:
 
