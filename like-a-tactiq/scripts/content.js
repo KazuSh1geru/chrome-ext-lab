@@ -1,6 +1,6 @@
 console.log('Content script loaded for Like-a-Tactiq');
 
-class MeetTranscription {
+export class MeetTranscription {
   constructor() {
     this.isTranscribing = false;
     this.recognition = null;
@@ -106,7 +106,9 @@ function initializeTranscription() {
   });
 }
 
-// ページ読み込み完了時に実行
-document.addEventListener('DOMContentLoaded', () => {
-  initializeTranscription();
-}); 
+// テスト環境でない場合のみ初期化を実行
+if (process.env.NODE_ENV !== 'test') {
+  document.addEventListener('DOMContentLoaded', () => {
+    initializeTranscription();
+  });
+} 
