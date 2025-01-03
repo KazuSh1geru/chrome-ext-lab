@@ -64,4 +64,31 @@ if (typeof exports !== 'undefined') {
   module.exports = { MeetTranscription };
 } else {
   window.MeetTranscription = MeetTranscription;
-} 
+}
+
+// メッセージリスナーの設定
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log('Received message:', request);
+  try {
+    switch (request.action) {
+      case 'startTranscription':
+        window.initializeTranscription();
+        sendResponse({ status: 'started' });
+        break;
+      case 'stopTranscription':
+        // transcriptionのインスタンスを取得して停止
+        const transcription = window.transcription;
+        if (transcription) {
+          transcription.stop();
+        }
+        sendResponse({ status: 'stopped' });
+        break;
+      default:
+        sendResponse({ error: 'Unknown action' });
+    }
+  } catch (error) {
+    console.error('Error handling message:', error);
+    sendResponse({ error: error.message });
+  }
+  return true; // 非同期レスポンスのために必要
+}); 
