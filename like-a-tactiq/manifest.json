@@ -20,7 +20,8 @@
       "js": [
         "scripts/content.js",
         "scripts/transcription.js"
-      ]
+      ],
+      "run_at": "document_start"
     }
   ],
   "action": {

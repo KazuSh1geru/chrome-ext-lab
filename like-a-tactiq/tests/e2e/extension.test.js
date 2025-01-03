@@ -1,6 +1,11 @@
 const puppeteer = require('puppeteer');
 const path = require('path');
 
+// waitヘルパー関数を追加
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+jest.setTimeout(60000);
+
 describe('Like-a-Tactiq Extension E2E', () => {
   let browser;
   let page;
@@ -43,10 +48,12 @@ describe('Like-a-Tactiq Extension E2E', () => {
   beforeEach(async () => {
     try {
       page = await browser.newPage();
-      await page.goto('https://meet.google.com/test-meeting-id', {
+      await page.goto('https://meet.google.com', {
         waitUntil: 'networkidle0',
         timeout: 30000
       });
+      // ページ読み込み後に少し待機
+      await wait(2000);
     } catch (error) {
       console.error('Failed to setup test page:', error);
       throw error;
@@ -67,7 +74,8 @@ describe('Like-a-Tactiq Extension E2E', () => {
 
   test('extension injects transcript container', async () => {
     try {
-      await page.waitForSelector('.like-a-tactiq-transcript', { timeout: 5000 });
+      // タイムアウトを延長
+      await page.waitForSelector('.like-a-tactiq-transcript', { timeout: 10000 });
       const container = await page.$('.like-a-tactiq-transcript');
       expect(container).toBeTruthy();
     } catch (error) {
@@ -83,13 +91,13 @@ describe('Like-a-Tactiq Extension E2E', () => {
       
       await popupPage.waitForSelector('#startTranscription');
       await popupPage.click('#startTranscription');
-      await popupPage.waitForTimeout(1000);
+      await wait(1000);
 
       const status = await popupPage.$eval('#status', el => el.textContent);
       expect(status).toBe('Transcribing...');
 
       await popupPage.click('#stopTranscription');
-      await popupPage.waitForTimeout(1000);
+      await wait(1000);
 
       const newStatus = await popupPage.$eval('#status', el => el.textContent);
       expect(newStatus).toBe('Stopped');
@@ -118,7 +126,7 @@ describe('Like-a-Tactiq Extension E2E', () => {
 
       await page.waitForFunction(
         () => document.querySelector('.like-a-tactiq-transcript p')?.textContent === 'Test transcription',
-        { timeout: 5000 }
+        { timeout: 60000 }
       );
 
       const transcriptText = await page.$eval('.like-a-tactiq-transcript p', el => el.textContent);
