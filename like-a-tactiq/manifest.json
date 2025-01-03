@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Like-a-Tactiq",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Google Meetのリアルタイム文字起こしを行うChrome拡張",
   "permissions": [
     "tabs",

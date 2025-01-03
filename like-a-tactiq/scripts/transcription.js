@@ -67,4 +67,4 @@ class Transcription {
 }
 
 // グローバルに公開
-window.Transcription = Transcription; 
+window.Transcription = Transcription;
