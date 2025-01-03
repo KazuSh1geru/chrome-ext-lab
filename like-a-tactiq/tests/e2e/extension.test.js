@@ -16,16 +16,24 @@ describe('Like-a-Tactiq Extension E2E', () => {
         '--allow-file-access-from-files',
         '--use-fake-ui-for-media-stream',
         '--use-fake-device-for-media-stream',
-        '--no-sandbox'
-      ]
+        '--no-sandbox',
+        '--disable-web-security'
+      ],
+      devtools: true
     });
 
-    // 拡張機能の読み込みを待つ
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // 拡張機能の読み込み待機時間を増やす
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
     try {
+      const targets = await browser.targets();
+      console.log('Initial targets:', targets.map(t => ({
+        url: t.url(),
+        type: t.type()
+      })));
+
       extensionId = await getExtensionId(browser);
-      console.log('Extension ID:', extensionId);
+      console.log('Successfully found extension ID:', extensionId);
     } catch (error) {
       console.error('Failed to get extension ID:', error);
       throw error;

@@ -13,13 +13,25 @@ global.chrome = {
 // テスト用のヘルパー関数
 global.getExtensionId = async (browser) => {
   const targets = await browser.targets();
+  
+  // より詳細なデバッグ情報
+  console.log('All targets:', targets.map(t => ({
+    url: t.url(),
+    type: t.type(),
+    title: t.type() === 'service_worker' ? 'Service Worker' : t._targetInfo?.title
+  })));
+
   const extensionTarget = targets.find((target) => {
     const targetUrl = target.url() || '';
-    return targetUrl.startsWith('chrome-extension://') && targetUrl.includes('background');
+    const targetType = target.type();
+    return (
+      targetUrl.startsWith('chrome-extension://') && 
+      (targetType === 'service_worker' || targetType === 'background_page')
+    );
   });
 
   if (!extensionTarget) {
-    throw new Error('Extension background page not found');
+    throw new Error('Extension service worker not found');
   }
 
   const extensionUrl = extensionTarget.url();
